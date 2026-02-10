@@ -7,14 +7,14 @@ on:
       - stage
     paths:
       - terraform/** 
-      - .github/workflows/terraform.yml
+     # - .github/workflows/terraform.yml
   pull_request:
     branches:
       - main
     paths:
       - terraform/** 
-      - .github/workflows/terraform.yml
-  workflow_dispatch: 
+      #- .github/workflows/terraform.yml
+  #workflow_dispatch: 
 
 env:
   # Credentials for deployment to AWS
