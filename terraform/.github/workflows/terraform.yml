@@ -45,11 +45,11 @@ jobs:
         id: fmt 
         run: terraform fmt -check
 
-      - name: terraform validate 
+      - name: terraform validate
         id: validate 
         run: terraform validate 
 
-      - name: Terraform plan 
+      - name: Terraform plan
         id: plan
         run: terraform plan -no-color -input=false planfile 
         continue-on-error: true
