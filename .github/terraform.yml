@@ -49,7 +49,7 @@ jobs:
         id: validate
         run: terraform validate
 
-      - name: Terraform plan
+      - name: Terraform plane
         id: plan
         run: terraform plan -no-color -input=false -out=planfile
         continue-on-error: true
