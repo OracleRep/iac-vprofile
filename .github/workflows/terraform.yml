@@ -47,7 +47,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions-terraform
       - name: Test AWS Credentials 
-        run: aws sts get/caller-identity 
+        run: aws sts get-caller-identity 
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2 
