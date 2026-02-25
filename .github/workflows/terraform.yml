@@ -2,27 +2,22 @@ name: "Vprofile IAC"
 
 on:
   push:
-    branches:
-      - main
-      - stage
+    branches: [main, stage]
     paths:
-      - terraform/** 
-     # - .github/workflows/terraform.yml
+      - terraform/**
+      - .github/workflows/terraform.yml
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - terraform/** 
-      #- .github/workflows/terraform.yml
-  #workflow_dispatch: 
+      - terraform/**
+      - .github/workflows/terraform.yml
+  workflow_dispatch:
 
-# Required for OIDC
 permissions:
-  id-token: write   # to request the JWT
-  contents: read    # required by actions/checkout
+  id-token: write
+  contents: read
 
 env:
-  # S3 bucket for the terraform state
   BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE }}
   AWS_REGION: us-east-1
   EKS_CLUSTER: vprofile-eks
@@ -35,56 +30,58 @@ jobs:
       run:
         shell: bash
         working-directory: ./terraform
+
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4 
+        uses: actions/checkout@v4
 
-      #  OIDC auth to AWS (no static keys)
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions-terraform
-      - name: Test AWS Credentials 
-        run: aws sts get-caller-identity 
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2 
+        uses: hashicorp/setup-terraform@v2
         with:
-         terraform_version: 1.6.6
+          terraform_version: 1.6.6
 
       - name: Terraform init
-        id: init
         run: terraform init -backend-config="bucket=${BUCKET_TF_STATE}"
 
-      - name: Terraform format
-        id: fmt
+      - name: Terraform fmt
         run: terraform fmt -check
 
       - name: Terraform validate
-        id: validate
         run: terraform validate
 
       - name: Terraform plan
         id: plan
-        run: terraform plan -no-color -input=false -out=planfile
-        continue-on-error: true
+        run: |
+          set -euxo pipefail
+          terraform version
+          aws sts get-caller-identity
+          terraform plan -no-color -input=false -out=planfile 
 
       - name: Terraform plan status
-        if: steps.plan.outcome == 'failure'
-        run: exit 1 
+        id: plan_status
+        if: failure()
+        run: |
+          echo "Plan failed in step id=plan. Scroll up to see the exact Terraform error output."
+          exit 1
 
-      - name: Terraform Apply 
-        id: apple
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' 
-        run: terraform apply -auto-approve -input=false -parallelism=1 planfile 
+      - name: Terraform apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false -parallelism=1 planfile
 
-      - name: Get kube config file 
-        id: getconfig 
-        if: steps.apple.outcome == 'success' 
-        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
+      - name: Get kubeconfig file
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: aws eks update-kubeconfig --region "${AWS_REGION}" --name "${EKS_CLUSTER}"
 
-      - name: Install Ingress controller 
-        if: steps.apple.outcome == 'success' && steps.getconfig.outcome == 'success'
+      - name: Install Ingress controller
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.14.3/deploy/static/provider/aws/deploy.yaml
