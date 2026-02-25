@@ -51,7 +51,7 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform init
-        run: terraform init -backend-config="bucket=${BUCKET_TF_STATE}"
+        run: terraform init -backend-config="bucket=${BUCKET_TF_STATE}" -backend-config="region=${AWS_REGION}"
 
       - name: Terraform fmt
         run: terraform fmt -check
@@ -61,11 +61,15 @@ jobs:
 
       - name: Terraform plan
         id: plan
+        continue-on-error: true
         run: |
           set -euxo pipefail
-          terraform version
-          aws sts get-caller-identity
-          terraform plan -no-color -input=false -out=planfile 
+          terraform plan -no-color -input=false -out=planfile
+
+      - name: Fail if plan failed
+        if: steps.plan.outcome != 'success'
+        run: exit 1
+
 
       - name: Terraform plan status
         id: plan_status
@@ -84,4 +88,4 @@ jobs:
 
       - name: Install Ingress controller
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.14.3/deploy/static/provider/aws/deploy.yaml
+        run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/ref/controller-v1.14.3/deploy/static/provider/aws/deploy.yaml
