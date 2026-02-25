@@ -5,14 +5,15 @@ on:
     branches: [main, stage]
     paths:
       - terraform/**
-      - .github/workflows/terraform.yml
+      #- .github/workflows/terraform.yml
   pull_request:
     branches: [main]
     paths:
       - terraform/**
-      - .github/workflows/terraform.yml
-  workflow_dispatch:
+     # - .github/workflows/terraform.yml
+  #workflow_dispatch:
 
+# Required for OIDC
 permissions:
   id-token: write
   contents: read
@@ -35,6 +36,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+        #  OIDC auth to AWS (no static keys)
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -69,7 +71,6 @@ jobs:
       - name: Fail if plan failed
         if: steps.plan.outcome != 'success'
         run: exit 1
-
 
       - name: Terraform plan status
         id: plan_status
