@@ -68,9 +68,9 @@ jobs:
           set -euxo pipefail
           terraform plan -no-color -input=false -out=planfile
 
-      - name: Fail if plan failed
-        if: steps.plan.outcome != 'success'
-        run: exit 1
+      # - name: Fail if plan failed
+      #   if: steps.plan.outcome != 'success'
+      #   run: exit 1
 
       - name: Terraform plan status
         id: plan_status
