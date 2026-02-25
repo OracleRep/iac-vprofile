@@ -1,9 +1,10 @@
-module "eks" {
+check for fmt module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "19.19.1"
+  
 
   cluster_name    = local.cluster_name
-  cluster_version = "1.29"
+  cluster_version = "1.33"
 
   cluster_encryption_config = {
     resources = ["secrets"]
@@ -23,11 +24,13 @@ module "eks" {
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
+
   }
 
   eks_managed_node_groups = {
     one = {
-      name           = "node-group-1"
+      name = "node-group-1"
+
       instance_types = ["t3.small"]
 
       min_size     = 1
@@ -36,7 +39,8 @@ module "eks" {
     }
 
     two = {
-      name           = "node-group-2"
+      name = "node-group-2"
+
       instance_types = ["t3.small"]
 
       min_size     = 1
