@@ -72,12 +72,12 @@ jobs:
       #   if: steps.plan.outcome != 'success'
       #   run: exit 1
 
-      - name: Terraform plan status
-        id: plan_status
-        if: failure()
-        run: |
-          echo "Plan failed in step id=plan. Scroll up to see the exact Terraform error output."
-          exit 1
+      # - name: Terraform plan status
+      #   id: plan_status
+      #   if: failure()
+      #   run: |
+      #     echo "Plan failed in step id=plan. Scroll up to see the exact Terraform error output."
+      #     exit 1
 
       - name: Terraform apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
