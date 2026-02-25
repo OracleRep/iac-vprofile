@@ -5,6 +5,18 @@ module "eks" {
   cluster_name    = local.cluster_name
   cluster_version = "1.33"
 
+  cluster_encryption_config = {
+    resources = ["secrets"]
+  }
+
+  kms_key_administrators = [
+    "arn:aws:iam::851725409813:role/gitops-action-role"
+  ]
+
+  kms_key_users = [
+    "arn:aws:iam::851725409813:role/gitops-action-role"
+  ]
+
   vpc_id                         = module.vpc.vpc_id
   subnet_ids                     = module.vpc.private_subnets
   cluster_endpoint_public_access = true
