@@ -9,8 +9,8 @@ module "eks" {
     resources = ["secrets"]
   }
 
-  create_kms_key            = true
-  enable_kms_key_rotation   = true
+  create_kms_key          = true
+  enable_kms_key_rotation = true
   kms_key_administrators = [
     "arn:aws:iam::851725409813:role/gitops-action-role",
   ]
