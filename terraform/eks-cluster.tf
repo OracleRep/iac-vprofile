@@ -12,10 +12,10 @@ module "eks" {
   create_kms_key          = true
   enable_kms_key_rotation = true
   kms_key_administrators = [
-    "arn:aws:iam::851725409813:role/gitops-action-role",
+    "arn:aws:iam::xxxxxxxxxxx:role/gitops-action-role",
   ]
   kms_key_users = [
-    "arn:aws:iam::851725409813:role/gitops-action-role",
+    "arn:aws:iam::xxxxxxxxxxxx:role/gitops-action-role",
   ]
 
   vpc_id                         = module.vpc.vpc_id
